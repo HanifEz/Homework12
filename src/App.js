@@ -1,18 +1,56 @@
+import { useState, useEffect } from "react";
 
-import * as React from 'react';
-
+// komponen Board
 function Board() {
-  const squares = Array(9).fill(null);
-  function selectSquare(square) {
+  const [squares, setSquares] = useState(Array(9).fill(null));
+  const [status, setStatus] = useState("");
+  const [nextValue, setNextValue] = useState(calculateNextValue(squares));
+  const [winner, setWinner] = useState(calculateWinner(squares));
 
+  function selectSquare(square) {
+    if (winner) {
+      return;
+    }
+    setSquares((prevSquares) => {
+      if (prevSquares[square] === null) {
+        const newSquares = [...prevSquares];
+        newSquares[square] = nextValue;
+        return newSquares;
+      }
+      return prevSquares;
+    });
   }
 
+  useEffect(() => {
+    const nextVal = calculateNextValue(squares);
+    setNextValue(nextVal);
+
+    const win = calculateWinner(squares);
+    setWinner(win);
+  }, [squares]);
+
+  useEffect(() => {
+    const stat = calculateStatus(winner, squares, nextValue);
+    setStatus(stat);
+  }, [winner, squares, nextValue]);
+
   function restart() {
+    setSquares(Array(9).fill(null));
   }
 
   function renderSquare(i) {
+    let colorClass = "";
+    if (squares[i] === "X") {
+      colorClass = "text-emerald-500";
+    } else {
+      colorClass = "text-amber-500";
+    }
+
     return (
-      <button className="square" onClick={() => selectSquare(i)}>
+      <button
+        className={`square-button bg-slate-100 h-28 w-28 border m-2 rounded-lg text-8xl ${colorClass}`}
+        onClick={() => selectSquare(i)}
+      >
         {squares[i]}
       </button>
     );
@@ -20,33 +58,38 @@ function Board() {
 
   return (
     <div>
-      <div >STATUS</div>
-      <div >
+      <div className="mb-3">{status}</div>
+      <div className="flex items-center">
         {renderSquare(0)}
         {renderSquare(1)}
         {renderSquare(2)}
       </div>
-      <div >
+      <div className="flex items-center">
         {renderSquare(3)}
         {renderSquare(4)}
         {renderSquare(5)}
       </div>
-      <div >
+      <div className="flex items-center">
         {renderSquare(6)}
         {renderSquare(7)}
         {renderSquare(8)}
       </div>
-      <button onClick={restart}>
-        restart
+      <button
+        className="bg-gray-500 hover:bg-gray-600 active:bg-gray-700 focus:outline-none text-4xl px-4 py-2 mt-3 rounded-lg"
+        onClick={restart}
+      >
+        Restart
       </button>
     </div>
   );
 }
 
+// komponen Game
 function Game() {
   return (
-    <div >
-      <div >
+    <div className="flex justify-center text-center text-white">
+      <div className="text-2xl">
+        <h1 className="text-6xl mb-8 mt-4">Tic Tac Toe</h1>
         <Board />
       </div>
     </div>
@@ -58,13 +101,13 @@ function calculateStatus(winner, squares, nextValue) {
   return winner
     ? `Winner: ${winner}`
     : squares.every(Boolean)
-      ? `Scratch: Cat's game`
-      : `Next player: ${nextValue}`;
+    ? `Scratch: Cat's game`
+    : `Next player: ${nextValue}`;
 }
 
 // eslint-disable-next-line no-unused-vars
 function calculateNextValue(squares) {
-  return squares.filter(Boolean).length % 2 === 0 ? 'X' : 'O';
+  return squares.filter(Boolean).length % 2 === 0 ? "X" : "O";
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -88,6 +131,7 @@ function calculateWinner(squares) {
   return null;
 }
 
+// componen app
 function App() {
   return <Game />;
 }
